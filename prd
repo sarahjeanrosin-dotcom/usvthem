@@ -1,0 +1,483 @@
+You are my senior full-stack software engineer.
+
+We are building a production-quality AI Competitive Battle Card Generator for Genea.
+
+The application should be architected for long-term scalability and should follow modern best practices using Next.js, TypeScript, Tailwind, Supabase, and Claude.
+
+Do not create a prototype or hackathon project. Build this as if it will eventually become an internal Product Marketing application used by an entire sales organization.
+
+-----------------------------------
+PROJECT GOAL
+-----------------------------------
+
+The purpose of this application is to generate branded, evidence-based competitive battle cards on demand.
+
+The application should compare Genea against one or more competitors and generate a professionally designed PDF that can be used by sales during customer conversations.
+
+The primary business goal is to eliminate manual battle card creation while ensuring every document follows Genea branding and messaging.
+
+Initially I will be the only user, but the application should be designed so it can support multiple authenticated users in the future.
+
+-----------------------------------
+PRIMARY USER FLOW
+-----------------------------------
+
+1. Open application
+
+2. Create New Battle Card
+
+3. Select Decision Maker
+
+4. Select Industry Vertical
+
+5. Select Product Category
+
+6. Select Competitor(s)
+
+7. Generate Battle Card
+
+8. Preview
+
+9. Export PDF
+
+10. Save PDF to Supabase history
+
+-----------------------------------
+DECISION MAKERS
+-----------------------------------
+
+The application should include common security purchasing personas.
+
+Security Leadership
+
+- Chief Security Officer
+- VP Security
+- Director of Security
+- Security Manager
+
+IT
+
+- CIO
+- CTO
+- Director of IT
+- IT Administrator
+- Systems Administrator
+- Infrastructure Manager
+
+Facilities
+
+- Facilities Director
+- Facilities Manager
+- Corporate Real Estate Director
+- Workplace Manager
+
+Operations
+
+- COO
+- Operations Director
+
+HR
+
+- HR Director
+- Workplace Experience
+
+Executive
+
+- CEO
+- CFO
+- Procurement
+
+-----------------------------------
+VERTICALS
+-----------------------------------
+
+- K-12
+- Higher Education
+- Healthcare
+- Critical Infrastructure
+- Commercial Real Estate
+- Banks & Financial Institutions
+
+-----------------------------------
+PRODUCT CATEGORIES
+-----------------------------------
+
+- Access Control
+- Visitor Management
+- Mobile Credentials
+- Video Management System (VMS)
+
+-----------------------------------
+COMPETITOR SELECTION
+-----------------------------------
+
+Default selection is ONE competitor.
+
+Users may optionally compare against two or three competitors.
+
+Maximum competitors = 3.
+
+-----------------------------------
+INITIAL COMPETITORS
+-----------------------------------
+
+Brivo
+
+Help Center
+https://support.brivo.com/s/?language=en_US
+
+Product News
+https://www.brivo.com/about/product-news/
+
+-----------------------------------
+
+Acre
+
+Support Portal
+https://www.acresecurity.com/support-portal
+
+-----------------------------------
+
+Verkada
+
+Help Center
+https://help.verkada.com/
+
+-----------------------------------
+
+Lenel S2
+
+Technical Documentation
+https://buildings.honeywell.com/us/en/support/technical-support/technical-solutions?facetgroup=brand&facet=LenelS2
+
+-----------------------------------
+
+Genetec
+
+Technical Documentation
+https://techdocs.genetec.com/
+
+Release Notes
+https://techdocs.genetec.com/r/en-US/Security-Center-Release-Notes-5.13.3.0/Release-notes
+
+-----------------------------------
+
+Gallagher
+
+Technical Guides
+https://help.security.gallagher.com/smb/resources/technical-guides
+
+-----------------------------------
+
+Avigilon Alta
+
+Product Information
+https://www.avigilon.com/blog/avigilon-brand-transition-faqs
+
+-----------------------------------
+GENEA KNOWLEDGE SOURCES
+-----------------------------------
+
+Help Center
+
+https://help.getgenea.com/en/
+
+Product Updates
+
+https://help.getgenea.com/en/articles/9276313-genea-security-product-updates
+
+Productboard
+
+https://portal.productboard.com/getgenea/6-customer-portal/tabs/19-in-progress
+
+https://portal.productboard.com/getgenea/6-customer-portal/tabs/20-released
+
+These sources should always be treated as the authoritative source for Genea.
+
+-----------------------------------
+ADDING A NEW COMPETITOR
+-----------------------------------
+
+Do NOT hardcode competitors.
+
+Instead create an admin workflow called
+
+Add Competitor
+
+The form should include:
+
+Company Name
+
+Logo Upload
+
+Website
+
+Help Center URL
+
+Release Notes URL(s)
+
+Product News URL(s)
+
+Documentation URL(s)
+
+Optional Serper Search Terms
+
+Active / Inactive Toggle
+
+Notes
+
+Save to Supabase.
+
+The application should automatically make the new competitor available throughout the application.
+
+-----------------------------------
+REFRESH KNOWLEDGE
+-----------------------------------
+
+Each competitor should have a
+
+Refresh Knowledge
+
+button.
+
+When clicked the application should
+
+Download documentation
+
+Extract text
+
+Chunk content
+
+Store embeddings
+
+Update the knowledge base
+
+Record
+
+Last Refresh Date
+
+Refresh Status
+
+Number of Documents
+
+-----------------------------------
+BATTLE CARD CONTENT
+-----------------------------------
+
+Claude should generate
+
+Executive Summary
+
+Competitive Positioning
+
+Key Differentiators
+
+Strengths
+
+Weaknesses
+
+Feature Comparison Table
+
+Objection Handling
+
+Discovery Questions
+
+Talk Track
+
+Recent Product Releases
+
+Recommended Messaging
+
+Suggested Positioning
+
+Ideal Customer
+
+Risks
+
+Sources
+
+-----------------------------------
+IMPORTANT AI BEHAVIOR
+-----------------------------------
+
+This is extremely important.
+
+The generated battle card should NOT simply summarize both companies.
+
+Instead Claude should position Genea competitively.
+
+The positioning should change depending on
+
+Decision Maker
+
+Vertical
+
+Product Category
+
+Competitor
+
+For example
+
+A Director of IT at a Healthcare organization should receive different positioning than a Facilities Director at a Commercial Real Estate company.
+
+Messaging should be customized accordingly.
+
+The positioning should be confident, sales-oriented, and evidence-based.
+
+Every competitive claim should be backed by documentation whenever possible.
+
+Never invent capabilities.
+
+Never fabricate competitor weaknesses.
+
+Always cite the evidence used.
+
+-----------------------------------
+PDF DESIGN
+-----------------------------------
+
+Landscape orientation.
+
+Simple.
+
+Professional.
+
+Minimal.
+
+Easy to scan.
+
+Not overly designed.
+
+Should follow Genea branding.
+
+Include
+
+Genea logo
+
+Competitor logo(s)
+
+Generation date
+
+Clear section hierarchy
+
+Tables
+
+Callout boxes
+
+Brand colors
+
+Readable typography
+
+The PDF should feel like a polished sales enablement document rather than a marketing brochure.
+
+-----------------------------------
+SEARCH HISTORY
+-----------------------------------
+
+Every generated battle card should be saved.
+
+Save
+
+Prompt
+
+Selected competitors
+
+Decision maker
+
+Vertical
+
+Product category
+
+Generation date
+
+Generated PDF
+
+Source citations
+
+Allow searching by
+
+Competitor
+
+Decision Maker
+
+Vertical
+
+Product
+
+Date
+
+Keyword
+
+-----------------------------------
+TECH STACK
+-----------------------------------
+
+Next.js
+
+TypeScript
+
+Tailwind
+
+Supabase
+
+Claude API
+
+Serper API
+
+PDF generation
+
+Responsive UI
+
+-----------------------------------
+ARCHITECTURE
+-----------------------------------
+
+Design the application for long-term scalability.
+
+Separate
+
+Frontend
+
+Database
+
+Knowledge ingestion
+
+AI generation
+
+PDF generation
+
+History
+
+Authentication
+
+Do not tightly couple these systems.
+
+-----------------------------------
+FIRST TASK
+-----------------------------------
+
+Before writing any code, think through the complete application architecture.
+
+Produce:
+
+1. Recommended folder structure
+
+2. Database schema
+
+3. Supabase tables
+
+4. API architecture
+
+5. Component hierarchy
+
+6. Page wireframes
+
+7. User flow diagram
+
+8. Knowledge ingestion architecture
+
+9. AI generation architecture
+
+10. PDF generation architecture
+
+Then begin implementation one feature at a time.
