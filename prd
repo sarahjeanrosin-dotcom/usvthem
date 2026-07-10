@@ -1,3 +1,7 @@
+Version: 0.1
+Last Updated: July 10, 2026
+Status: Draft
+
 You are my senior full-stack software engineer.
 
 We are building a production-quality AI Competitive Battle Card Generator for Genea.
@@ -481,3 +485,20 @@ Produce:
 10. PDF generation architecture
 
 Then begin implementation one feature at a time.
+
+## Decisions
+
+Track important product decisions and why they were made.
+
+| Date | Decision | Reason |
+|------|----------|--------|
+| 2026-07-10 | Default comparison is one competitor | Simpler UX |
+
+## Future Ideas
+
+Ideas that are intentionally out of scope for the MVP.
+
+- Competitive alerts
+- AI-generated objection handling videos
+
+
