@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Plus, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 
 export default async function CompetitorsAdminPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: competitors } = await supabase
     .from("competitors")
     .select("*")

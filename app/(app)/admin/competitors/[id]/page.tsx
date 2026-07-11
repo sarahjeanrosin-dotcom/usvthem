@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { CompetitorForm } from "@/components/admin/competitor-form";
 
 export default async function EditCompetitorPage({
@@ -8,7 +8,7 @@ export default async function EditCompetitorPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: competitor } = await supabase
     .from("competitors")
