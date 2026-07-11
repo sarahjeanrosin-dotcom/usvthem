@@ -34,8 +34,42 @@ export function CompetitorForm({ competitor }: CompetitorFormProps) {
   const [active, setActive] = useState(competitor?.active ?? true);
   const [notes, setNotes] = useState(competitor?.notes ?? "");
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [autoFilledLogoUrl, setAutoFilledLogoUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [autofilling, setAutofilling] = useState(false);
+  const [autofillDone, setAutofillDone] = useState(false);
   const [error, setError] = useState("");
+
+  async function handleAutofill() {
+    if (!name.trim()) return;
+    setAutofilling(true);
+    setAutofillDone(false);
+    setError("");
+    try {
+      const res = await fetch("/api/competitors/autofill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Auto-fill failed");
+      }
+      const data = await res.json();
+      if (data.website) setWebsite(data.website);
+      if (data.help_center_url) setHelpCenterUrl(data.help_center_url);
+      if (data.release_notes_urls?.length) setReleaseNotesUrls(data.release_notes_urls);
+      if (data.product_news_urls?.length) setProductNewsUrls(data.product_news_urls);
+      if (data.documentation_urls?.length) setDocumentationUrls(data.documentation_urls);
+      if (data.serper_terms?.length) setSerperTerms(data.serper_terms);
+      if (data.logo_url) setAutoFilledLogoUrl(data.logo_url);
+      setAutofillDone(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Auto-fill failed");
+    } finally {
+      setAutofilling(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,6 +91,8 @@ export function CompetitorForm({ competitor }: CompetitorFormProps) {
           .from("competitor-logos")
           .getPublicUrl(path);
         logoUrl = publicUrl;
+      } else if (autoFilledLogoUrl) {
+        logoUrl = autoFilledLogoUrl;
       }
 
       const payload = {
@@ -94,28 +130,70 @@ export function CompetitorForm({ competitor }: CompetitorFormProps) {
     }
   }
 
+  const currentLogoUrl = logoFile
+    ? URL.createObjectURL(logoFile)
+    : autoFilledLogoUrl ?? competitor?.logo_url ?? null;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
       )}
 
+      {autofillDone && (
+        <div className="flex items-center gap-2 rounded-lg border border-brand-blue-soft bg-brand-blue-ice px-4 py-3 text-sm text-brand-navy">
+          <svg className="h-4 w-4 shrink-0 text-brand-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          AI pre-filled the fields below — review and edit before saving.
+        </div>
+      )}
+
       {/* Basic info */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4">
         <h2 className="text-sm font-semibold text-brand-navy">Basic Information</h2>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-brand-navy">
-              Company Name <span className="text-red-500">*</span>
-            </label>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-brand-navy">
+            Company Name <span className="text-red-500">*</span>
+          </label>
+          <div className="flex gap-2">
             <input
               required
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
+              onChange={(e) => { setName(e.target.value); setAutofillDone(false); }}
+              className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
             />
+            <button
+              type="button"
+              onClick={handleAutofill}
+              disabled={autofilling || name.trim().length < 2}
+              className="flex items-center gap-1.5 whitespace-nowrap rounded-lg border border-brand-blue px-3 py-2 text-sm font-medium text-brand-blue transition hover:bg-brand-blue hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {autofilling ? (
+                <>
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                  Researching…
+                </>
+              ) : (
+                <>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Auto-fill with AI
+                </>
+              )}
+            </button>
           </div>
+          <p className="mt-1 text-xs text-gray-400">
+            Enter the company name, then click Auto-fill to have AI suggest URLs and fetch their logo.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-brand-navy">Website</label>
             <input
@@ -126,32 +204,47 @@ export function CompetitorForm({ competitor }: CompetitorFormProps) {
               className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
             />
           </div>
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-brand-navy">Help Center URL</label>
-          <input
-            type="url"
-            value={helpCenterUrl}
-            onChange={(e) => setHelpCenterUrl(e.target.value)}
-            placeholder="https://"
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
-          />
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-brand-navy">Help Center URL</label>
+            <input
+              type="url"
+              value={helpCenterUrl}
+              onChange={(e) => setHelpCenterUrl(e.target.value)}
+              placeholder="https://"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-brand-navy">Logo</label>
-            {competitor?.logo_url && (
-              <img src={competitor.logo_url} alt="Current logo" className="mb-2 h-8 object-contain" />
+            {currentLogoUrl && (
+              <div className="mb-2 flex items-center gap-2">
+                <img
+                  src={currentLogoUrl}
+                  alt="Logo preview"
+                  className="h-10 max-w-[140px] object-contain rounded border border-gray-100 bg-gray-50 p-1"
+                />
+                {autoFilledLogoUrl && !logoFile && (
+                  <span className="text-xs text-brand-blue">via Brandfetch</span>
+                )}
+              </div>
             )}
             <input
               type="file"
               accept=".png,.svg,.jpg,.jpeg,.webp"
-              onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
+              onChange={(e) => {
+                setLogoFile(e.target.files?.[0] ?? null);
+                if (e.target.files?.[0]) setAutoFilledLogoUrl(null);
+              }}
               className="w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-blue-ice file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-navy hover:file:bg-brand-blue-soft"
             />
-            <p className="mt-1 text-xs text-gray-400">PNG, SVG, JPG — max 5MB</p>
+            <p className="mt-1 text-xs text-gray-400">
+              {autoFilledLogoUrl && !logoFile
+                ? "Logo fetched automatically — upload a file to replace it."
+                : "PNG, SVG, JPG — max 5MB"}
+            </p>
           </div>
 
           <div className="flex items-center gap-3 pt-6">
