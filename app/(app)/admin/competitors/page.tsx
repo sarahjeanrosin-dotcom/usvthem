@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Plus, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+import { Plus, CheckCircle, XCircle } from "lucide-react";
+import { RefreshKnowledgeButton } from "@/components/admin/refresh-knowledge-button";
 
 export default async function CompetitorsAdminPage() {
   const supabase = createAdminClient();
@@ -81,17 +82,10 @@ export default async function CompetitorsAdminPage() {
                 </td>
                 <td className="px-6 py-4 text-gray-text">{c.doc_count ?? 0}</td>
                 <td className="px-6 py-4">
-                  {c.refresh_status === "running" ? (
-                    <span className="flex items-center gap-1.5 text-brand-blue">
-                      <RefreshCw size={13} className="animate-spin" /> Running
-                    </span>
-                  ) : c.refresh_status === "success" ? (
-                    <span className="text-green-600">Up to date</span>
-                  ) : c.refresh_status === "error" ? (
-                    <span className="text-red-500">Error</span>
-                  ) : (
-                    <span className="text-gray-400">Not synced</span>
-                  )}
+                  <RefreshKnowledgeButton
+                    competitorId={c.id}
+                    initialStatus={c.refresh_status}
+                  />
                 </td>
                 <td className="px-6 py-4">
                   <Link
