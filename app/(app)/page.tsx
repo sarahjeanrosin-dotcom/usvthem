@@ -1,22 +1,23 @@
 import Link from "next/link";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { PlusCircle, FileText, Clock } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: recentCards } = await supabase
+  const admin = createAdminClient();
+  const { data: recentCards } = await admin
     .from("battle_cards")
     .select("id, decision_maker, vertical, product_category, created_at")
     .eq("user_id", user!.id)
     .order("created_at", { ascending: false })
     .limit(5);
 
-  const { count } = await supabase
+  const { count } = await admin
     .from("battle_cards")
     .select("*", { count: "exact", head: true })
     .eq("user_id", user!.id);
@@ -78,9 +79,13 @@ export default async function DashboardPage() {
               {recentCards.map((card) => (
                 <tr
                   key={card.id}
-                  className="border-b border-gray-50 last:border-0 hover:bg-brand-blue-ice/40 transition-colors"
+                  className="border-b border-gray-50 last:border-0 hover:bg-brand-blue-ice/40 transition-colors cursor-pointer"
                 >
-                  <td className="px-6 py-3 font-medium text-brand-navy">{card.decision_maker}</td>
+                  <td className="px-6 py-3 font-medium text-brand-navy">
+                    <Link href={`/battle-cards/${card.id}`} className="block hover:text-brand-blue">
+                      {card.decision_maker}
+                    </Link>
+                  </td>
                   <td className="px-6 py-3 text-gray-text">{card.vertical}</td>
                   <td className="px-6 py-3 text-gray-text">{card.product_category}</td>
                   <td className="px-6 py-3 text-gray-text">
