@@ -1,32 +1,43 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCurrentUserPermissions } from "@/lib/permissions";
 import { Plus, CheckCircle, XCircle } from "lucide-react";
-import { RefreshKnowledgeButton } from "@/components/admin/refresh-knowledge-button";
+import { RefreshKnowledgeButton } from "@/components/refresh-knowledge-button";
+import { SyncAllButton } from "@/components/them/sync-all-button";
 
-export default async function CompetitorsAdminPage() {
+export default async function ThemPage() {
+  const { permissions } = await getCurrentUserPermissions();
+  if (!permissions.can_edit_them) redirect("/");
+
   const supabase = createAdminClient();
   const { data: competitors } = await supabase
     .from("competitors")
     .select("*")
-    .order("is_genea", { ascending: false })
+    .eq("is_genea", false)
     .order("name");
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-brand-navy">Competitors</h1>
+          <h1 className="text-2xl font-semibold text-brand-navy">Them</h1>
           <p className="mt-1 text-sm text-gray-text">
-            Manage competitors and their knowledge sources
+            Manage competitor profiles and their knowledge sources
           </p>
         </div>
-        <Link
-          href="/admin/competitors/new"
-          className="flex items-center gap-2 rounded-lg bg-brand-navy px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-blue"
-        >
-          <Plus size={16} />
-          Add Competitor
-        </Link>
+        <div className="flex items-center gap-3">
+          <SyncAllButton
+            competitors={(competitors ?? []).map((c) => ({ id: c.id, name: c.name }))}
+          />
+          <Link
+            href="/them/new"
+            className="flex items-center gap-2 rounded-lg bg-brand-navy px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-blue"
+          >
+            <Plus size={16} />
+            Add Competitor
+          </Link>
+        </div>
       </div>
 
       <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
@@ -36,7 +47,7 @@ export default async function CompetitorsAdminPage() {
               <th className="px-6 py-3">Competitor</th>
               <th className="px-6 py-3">Status</th>
               <th className="px-6 py-3">Last Refresh</th>
-              <th className="px-6 py-3">Docs</th>
+              <th className="px-6 py-3">Sources</th>
               <th className="px-6 py-3">Knowledge</th>
               <th className="px-6 py-3"></th>
             </tr>
@@ -56,12 +67,7 @@ export default async function CompetitorsAdminPage() {
                         {c.name[0]}
                       </div>
                     )}
-                    <div>
-                      <p className="font-medium text-brand-navy">{c.name}</p>
-                      {c.is_genea && (
-                        <span className="text-xs text-brand-blue">Genea (us)</span>
-                      )}
-                    </div>
+                    <p className="font-medium text-brand-navy">{c.name}</p>
                   </div>
                 </td>
                 <td className="px-6 py-4">
@@ -89,7 +95,7 @@ export default async function CompetitorsAdminPage() {
                 </td>
                 <td className="px-6 py-4">
                   <Link
-                    href={`/admin/competitors/${c.id}`}
+                    href={`/them/${c.id}`}
                     className="text-sm font-medium text-brand-blue hover:text-brand-navy transition-colors"
                   >
                     Edit

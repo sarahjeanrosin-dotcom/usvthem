@@ -3,16 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { UrlListInput } from "./url-list-input";
+import { UrlListInput } from "./admin/url-list-input";
 import type { Database } from "@/types/database";
 
 type Competitor = Database["public"]["Tables"]["competitors"]["Row"];
 
 interface CompetitorFormProps {
   competitor?: Competitor;
+  redirectTo?: string;
 }
 
-export function CompetitorForm({ competitor }: CompetitorFormProps) {
+export function CompetitorForm({ competitor, redirectTo = "/them" }: CompetitorFormProps) {
   const router = useRouter();
   const isEdit = !!competitor;
 
@@ -122,7 +123,7 @@ export function CompetitorForm({ competitor }: CompetitorFormProps) {
         throw new Error(data.error ?? "Save failed");
       }
 
-      router.push("/admin/competitors");
+      router.push(redirectTo);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

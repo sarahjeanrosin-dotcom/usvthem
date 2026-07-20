@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCurrentUserPermissions } from "@/lib/permissions";
 import { BattleCardPreview } from "@/components/battle-card/battle-card-preview";
+import { ExportPdfButton } from "@/components/battle-card/export-pdf-button";
 import { ArrowLeft } from "lucide-react";
 
 export default async function BattleCardPage({
@@ -9,6 +11,9 @@ export default async function BattleCardPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { permissions } = await getCurrentUserPermissions();
+  if (!permissions.can_create_battlecards && !permissions.can_view_history) redirect("/");
+
   const { id } = await params;
   const admin = createAdminClient();
 
@@ -46,11 +51,7 @@ export default async function BattleCardPage({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="rounded-lg border border-gray-200 px-4 py-2.5 text-sm text-gray-400">
-            Export PDF — coming soon
-          </span>
-        </div>
+        <ExportPdfButton battleCardId={id} existingPdfUrl={card.pdf_url} />
       </div>
 
       <BattleCardPreview

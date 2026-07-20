@@ -3,24 +3,33 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, PlusCircle, Clock, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, PlusCircle, Clock, Building2, Users, Settings, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import type { Permissions } from "@/lib/permissions";
 
 interface SidebarProps {
-  isAdmin: boolean;
+  permissions: Permissions | null;
   userEmail: string;
 }
 
-const navLinks = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/battle-cards/new", label: "New Battle Card", icon: PlusCircle },
-  { href: "/history", label: "History", icon: Clock },
-];
-
-export function Sidebar({ isAdmin, userEmail }: SidebarProps) {
+export function Sidebar({ permissions, userEmail }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+
+  const navLinks = [
+    { href: "/", label: "Dashboard", icon: LayoutDashboard, show: true },
+    {
+      href: "/battle-cards/new",
+      label: "New Battle Card",
+      icon: PlusCircle,
+      show: permissions?.can_create_battlecards,
+    },
+    { href: "/history", label: "History", icon: Clock, show: permissions?.can_view_history },
+    { href: "/us", label: "Us", icon: Building2, show: permissions?.can_edit_us },
+    { href: "/them", label: "Them", icon: Users, show: permissions?.can_edit_them },
+    { href: "/admin", label: "Admin", icon: Settings, show: permissions?.can_manage_users },
+  ];
 
   async function signOut() {
     const supabase = createClient();
@@ -38,39 +47,26 @@ export function Sidebar({ isAdmin, userEmail }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {navLinks.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href;
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                active
-                  ? "bg-brand-blue-ice text-brand-blue"
-                  : "text-gray-text hover:bg-gray-50 hover:text-brand-navy"
-              )}
-            >
-              <Icon size={18} />
-              {label}
-            </Link>
-          );
-        })}
-
-        {isAdmin && (
-          <Link
-            href="/admin/competitors"
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-              pathname.startsWith("/admin")
-                ? "bg-brand-blue-ice text-brand-blue"
-                : "text-gray-text hover:bg-gray-50 hover:text-brand-navy"
-            )}
-          >
-            <Settings size={18} />
-            Admin
-          </Link>
-        )}
+        {navLinks
+          .filter((link) => link.show)
+          .map(({ href, label, icon: Icon }) => {
+            const active = href === "/" ? pathname === href : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  active
+                    ? "bg-brand-blue-ice text-brand-blue"
+                    : "text-gray-text hover:bg-gray-50 hover:text-brand-navy"
+                )}
+              >
+                <Icon size={18} />
+                {label}
+              </Link>
+            );
+          })}
       </nav>
 
       {/* User + Sign out */}

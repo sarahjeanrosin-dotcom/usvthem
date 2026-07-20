@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getPermissions } from "@/lib/permissions";
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 
@@ -8,6 +9,10 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const permissions = await getPermissions(user.id);
+  if (!permissions?.can_edit_us && !permissions?.can_edit_them)
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { name } = await request.json();
   if (!name?.trim()) return NextResponse.json({ error: "Name required" }, { status: 400 });

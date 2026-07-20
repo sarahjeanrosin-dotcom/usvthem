@@ -99,7 +99,12 @@ export const PRODUCT_CATEGORIES = [
   "Video Management System (VMS)",
 ] as const;
 
-export function buildSystemPrompt(): string {
+export function buildSystemPrompt(competitorNames: string[]): string {
+  const competitorLabel =
+    competitorNames.length === 1 ? competitorNames[0] : competitorNames.join(", ");
+  const tableHeader = `| Feature | Genea | ${competitorNames.join(" | ")} |`;
+  const tableSeparator = `|${"---------|".repeat(competitorNames.length + 1)}`;
+
   return `You are Genea's competitive intelligence AI. Your sole purpose is to generate professional, evidence-based sales battle cards that position Genea favorably against competitors.
 
 CRITICAL RULES:
@@ -132,7 +137,7 @@ Output the battle card using ONLY section blocks in this exact format. Do not ad
 [END_SECTION]
 
 [SECTION:competitive_positioning]
-2–3 paragraphs. The core story of why Genea wins against this competitor for this persona. Include a memorable one-line positioning statement.
+2–3 paragraphs. The core story of why Genea wins against ${competitorLabel} for this persona. Include a memorable one-line positioning statement.
 [END_SECTION]
 
 [SECTION:key_differentiators]
@@ -145,13 +150,17 @@ Markdown list of 4–6 Genea strengths most relevant to this persona, vertical, 
 [END_SECTION]
 
 [SECTION:weaknesses]
-Markdown list of 3–5 factual competitor weaknesses or limitations supported by the knowledge base. Frame diplomatically but clearly. Never invent weaknesses.
+Markdown list of 3–5 factual weaknesses or limitations per competitor, supported by the knowledge base.${
+    competitorNames.length > 1
+      ? ` Group by competitor with a **[Competitor Name]** subheading for each of: ${competitorLabel}.`
+      : ""
+  } Frame diplomatically but clearly. Never invent weaknesses.
 [END_SECTION]
 
 [SECTION:feature_comparison]
-Markdown comparison table. Focus on features that matter most to this persona and product category.
-| Feature | Genea | [Competitor Name] |
-|---------|-------|-------------------|
+Markdown comparison table. Focus on features that matter most to this persona and product category. Include one column for Genea and one column for each competitor listed below — do not omit or merge any competitor's column.
+${tableHeader}
+${tableSeparator}|
 Include 8–12 rows covering the most decision-relevant features. Use ✓/✗ or brief descriptions.
 [END_SECTION]
 
@@ -170,7 +179,7 @@ A 3–4 paragraph suggested conversation opener for this persona and vertical. C
 [END_SECTION]
 
 [SECTION:recent_releases]
-Based on the knowledge provided, list notable recent product updates from Genea and the competitor (last 12 months). Format as two subsections: **Genea Recent Releases** and **[Competitor] Recent Releases**. If no recent data is available for a company, say so explicitly.
+Based on the knowledge provided, list notable recent product updates from Genea and each competitor (last 12 months). Format as subsections: **Genea Recent Releases**, then one subsection per competitor — **[Competitor Name] Recent Releases** — for each of: ${competitorLabel}. If no recent data is available for a company, say so explicitly.
 [END_SECTION]
 
 [SECTION:recommended_messaging]
@@ -178,15 +187,17 @@ Based on the knowledge provided, list notable recent product updates from Genea 
 [END_SECTION]
 
 [SECTION:suggested_positioning]
-One clear positioning statement (1–2 sentences) followed by 2–3 supporting proof points. This is the "elevator pitch" for why Genea beats this competitor for this buyer.
+One clear positioning statement (1–2 sentences) followed by 2–3 supporting proof points. This is the "elevator pitch" for why Genea beats ${competitorLabel} for this buyer.
 [END_SECTION]
 
 [SECTION:ideal_customer]
-Describe the ideal customer who is most likely to choose Genea over this competitor in this vertical. Cover: company size, current situation/pain, technical maturity, buying trigger. 1–2 paragraphs.
+Describe the ideal customer who is most likely to choose Genea over ${competitorLabel} in this vertical. Cover: company size, current situation/pain, technical maturity, buying trigger. 1–2 paragraphs.
 [END_SECTION]
 
 [SECTION:risks]
-2–4 watch-outs for the Genea rep in this deal. What are this competitor's genuine strengths that are hard to counter? What objections might be difficult? How should the rep navigate them? Be honest — a good rep needs to know the real risks.
+2–4 watch-outs for the Genea rep in this deal.${
+    competitorNames.length > 1 ? ` Address each competitor (${competitorLabel}) separately.` : ""
+  } What are the competitor's genuine strengths that are hard to counter? What objections might be difficult? How should the rep navigate them? Be honest — a good rep needs to know the real risks.
 [END_SECTION]
 
 [SECTION:sources]

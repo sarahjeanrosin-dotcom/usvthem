@@ -192,19 +192,31 @@ export type Database = {
       }
       profiles: {
         Row: {
+          can_create_battlecards: boolean
+          can_edit_them: boolean
+          can_edit_us: boolean
+          can_manage_users: boolean
+          can_view_history: boolean
           created_at: string
           id: string
-          role: string
         }
         Insert: {
+          can_create_battlecards?: boolean
+          can_edit_them?: boolean
+          can_edit_us?: boolean
+          can_manage_users?: boolean
+          can_view_history?: boolean
           created_at?: string
           id: string
-          role?: string
         }
         Update: {
+          can_create_battlecards?: boolean
+          can_edit_them?: boolean
+          can_edit_us?: boolean
+          can_manage_users?: boolean
+          can_view_history?: boolean
           created_at?: string
           id?: string
-          role?: string
         }
         Relationships: []
       }

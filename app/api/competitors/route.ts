@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getPermissions } from "@/lib/permissions";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -20,13 +21,13 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const admin = createAdminClient();
-  const { data: profile } = await admin
-    .from("profiles").select("role").eq("id", user.id).single();
-  if (profile?.role !== "admin")
+  const permissions = await getPermissions(user.id);
+  // New competitors are always non-Genea (the Genea record is seeded once and edited via /us)
+  if (!permissions?.can_edit_them)
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await request.json();
+  const admin = createAdminClient();
   const { data, error } = await admin
     .from("competitors")
     .insert(body)

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getPermissions } from "@/lib/permissions";
 import { generateBattleCard } from "@/lib/claude/generate";
 import { NextResponse } from "next/server";
 
@@ -10,6 +11,10 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const permissions = await getPermissions(user.id);
+  if (!permissions?.can_create_battlecards)
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { decision_maker, vertical, product_category, competitor_ids } =
     await request.json();

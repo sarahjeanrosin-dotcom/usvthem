@@ -62,16 +62,18 @@ export async function runPipeline(competitorId: string): Promise<void> {
     );
   }
 
-  // Update competitor record with final stats
-  const { count } = await admin
+  // Update competitor record with final stats (distinct sources ingested, not raw chunk count)
+  const { data: ingestedChunks } = await admin
     .from("knowledge_chunks")
-    .select("*", { count: "exact", head: true })
+    .select("source_url")
     .eq("competitor_id", competitorId);
+
+  const sourceCount = new Set((ingestedChunks ?? []).map((c) => c.source_url)).size;
 
   await admin
     .from("competitors")
     .update({
-      doc_count: count ?? 0,
+      doc_count: sourceCount,
       last_refresh_at: new Date().toISOString(),
       refresh_status: "success",
       refresh_error: null,

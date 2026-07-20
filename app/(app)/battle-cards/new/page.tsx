@@ -1,7 +1,15 @@
+import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import { getPermissions } from "@/lib/permissions";
 import { WizardForm } from "@/components/battle-card/wizard-form";
 
 export default async function NewBattleCardPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const permissions = user ? await getPermissions(user.id) : null;
+  if (!permissions?.can_create_battlecards) redirect("/");
+
   const admin = createAdminClient();
   const { data: competitors } = await admin
     .from("competitors")

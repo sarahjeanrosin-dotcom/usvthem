@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { canEditCompetitor } from "@/lib/permissions";
 import { runPipeline } from "@/lib/ingestion/pipeline";
 import { NextResponse } from "next/server";
 
@@ -17,15 +18,10 @@ export async function POST(
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const admin = createAdminClient();
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  if (profile?.role !== "admin")
+  if (!(await canEditCompetitor(user.id, id)))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  const admin = createAdminClient();
   await admin
     .from("competitors")
     .update({ refresh_status: "running", refresh_error: null })

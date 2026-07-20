@@ -1,12 +1,16 @@
-import { notFound } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { CompetitorForm } from "@/components/admin/competitor-form";
+import { getCurrentUserPermissions } from "@/lib/permissions";
+import { CompetitorForm } from "@/components/competitor-form";
 
 export default async function EditCompetitorPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const { permissions } = await getCurrentUserPermissions();
+  if (!permissions.can_edit_them) redirect("/");
+
   const { id } = await params;
   const supabase = createAdminClient();
 
@@ -28,7 +32,7 @@ export default async function EditCompetitorPage({
           Update competitor details and knowledge sources
         </p>
       </div>
-      <CompetitorForm competitor={competitor} />
+      <CompetitorForm competitor={competitor} redirectTo="/them" />
     </div>
   );
 }

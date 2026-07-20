@@ -321,7 +321,7 @@ export function WizardForm({ competitors }: Props) {
                     )}
                     <span>{c.name}</span>
                     {c.doc_count === 0 && (
-                      <span className="ml-auto text-xs text-amber-500">No data</span>
+                      <span className="ml-auto text-xs text-amber-500">No sources</span>
                     )}
                   </button>
                 );

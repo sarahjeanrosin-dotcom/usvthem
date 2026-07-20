@@ -1,15 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { canEditCompetitor } from "@/lib/permissions";
 import { NextResponse } from "next/server";
 
-async function requireAdmin() {
+async function requireEditAccess(competitorId: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const admin = createAdminClient();
-  const { data: profile } = await admin
-    .from("profiles").select("role").eq("id", user.id).single();
-  return profile?.role === "admin" ? user : null;
+  if (!user) return false;
+  return canEditCompetitor(user.id, competitorId);
 }
 
 export async function GET(_: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -23,7 +21,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!await requireAdmin())
+  if (!await requireEditAccess(id))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await request.json();
@@ -36,7 +34,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  if (!await requireAdmin())
+  if (!await requireEditAccess(id))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const admin = createAdminClient();

@@ -134,7 +134,7 @@ export async function* generateBattleCard(
   const stream = anthropic.messages.stream({
     model: "claude-sonnet-4-6",
     max_tokens: 8000,
-    system: buildSystemPrompt(),
+    system: buildSystemPrompt(competitorNames),
     messages: [
       {
         role: "user",
