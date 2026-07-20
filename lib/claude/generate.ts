@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { searchKnowledge } from "@/lib/retrieval/search";
+import { embedQuery, searchKnowledgeByEmbedding } from "@/lib/retrieval/search";
 import { searchSerper } from "@/lib/serper/search";
 import { findBestTemplate } from "./templates";
 import { buildSystemPrompt, buildUserMessage, formatTemplateExample, SECTION_KEYS, type SectionKey } from "./prompts";
@@ -82,60 +82,51 @@ export async function* generateBattleCard(
   const competitorNames = (competitors ?? []).map((c) => c.name);
   const query = `${decisionMaker} ${vertical} ${productCategory} access control security`;
 
-  // RAG retrieval
-  yield { type: "status", message: "Retrieving Genea knowledge…" };
-  let geneaContext = "";
-  if (geneaRow?.id) {
-    try {
-      const chunks = await searchKnowledge(query, geneaRow.id, 20);
-      geneaContext = chunks.map((c) => `[${c.source_url}]\n${c.content}`).join("\n\n");
-    } catch {
-      // Non-fatal — proceed without Genea context
-    }
-  }
+  // Gather all context concurrently — RAG (Genea + each competitor), Serper, and the
+  // few-shot template are all independent lookups with no dependency on each other.
+  yield { type: "status", message: "Gathering knowledge and context…" };
 
-  const competitorContext: Record<string, string> = {};
-  for (const comp of competitors ?? []) {
-    yield { type: "status", message: `Retrieving ${comp.name} knowledge…` };
-    try {
-      const chunks = await searchKnowledge(query, comp.id, 15);
-      competitorContext[comp.name] = chunks
-        .map((c) => `[${c.source_url}]\n${c.content}`)
-        .join("\n\n");
-    } catch {
-      competitorContext[comp.name] = "";
-    }
-  }
+  const queryEmbedding = await embedQuery(query);
 
-  // Optional Serper supplemental context
-  let serperContext = "";
-  if (process.env.SERPER_API_KEY) {
-    yield { type: "status", message: "Gathering recent web intelligence…" };
-    try {
-      const searchResults = await Promise.allSettled(
-        competitorNames.map((name) =>
-          searchSerper(`${name} vs ${productCategory} ${new Date().getFullYear()}`)
+  const [geneaContext, competitorContextEntries, serperContext, templateExample] =
+    await Promise.all([
+      geneaRow?.id
+        ? searchKnowledgeByEmbedding(queryEmbedding, geneaRow.id, 20)
+            .then((chunks) => chunks.map((c) => `[${c.source_url}]\n${c.content}`).join("\n\n"))
+            .catch(() => "")
+        : Promise.resolve(""),
+
+      Promise.all(
+        (competitors ?? []).map((comp) =>
+          searchKnowledgeByEmbedding(queryEmbedding, comp.id, 15)
+            .then(
+              (chunks) =>
+                [comp.name, chunks.map((c) => `[${c.source_url}]\n${c.content}`).join("\n\n")] as const
+            )
+            .catch(() => [comp.name, ""] as const)
         )
-      );
-      const snippets = searchResults
-        .flatMap((r) => (r.status === "fulfilled" ? r.value : []))
-        .slice(0, 10)
-        .map((r) => `${r.title}: ${r.snippet}`)
-        .join("\n");
-      if (snippets) serperContext = snippets;
-    } catch {
-      // Non-fatal
-    }
-  }
+      ),
 
-  // Best-match few-shot template
-  let templateExample = "";
-  try {
-    const match = await findBestTemplate(decisionMaker, vertical, productCategory);
-    if (match) templateExample = formatTemplateExample(match.content);
-  } catch {
-    // Non-fatal — proceed without a reference example
-  }
+      process.env.SERPER_API_KEY
+        ? Promise.allSettled(
+            competitorNames.map((name) =>
+              searchSerper(`${name} vs ${productCategory} ${new Date().getFullYear()}`)
+            )
+          ).then((results) =>
+            results
+              .flatMap((r) => (r.status === "fulfilled" ? r.value : []))
+              .slice(0, 10)
+              .map((r) => `${r.title}: ${r.snippet}`)
+              .join("\n")
+          )
+        : Promise.resolve(""),
+
+      findBestTemplate(decisionMaker, vertical, productCategory)
+        .then((match) => (match ? formatTemplateExample(match.content) : ""))
+        .catch(() => ""),
+    ]);
+
+  const competitorContext = Object.fromEntries(competitorContextEntries);
 
   // Build prompt and call Claude
   yield { type: "status", message: "Generating battle card…" };
