@@ -16,11 +16,15 @@ set can_view_history = true,
     can_manage_users = true
 where role = 'admin';
 
+-- Drop every policy that depends on the role column BEFORE dropping it.
+drop policy if exists "Admins can read all profiles" on public.profiles;
+drop policy if exists "Authenticated users can read active competitors" on public.competitors;
+drop policy if exists "Admins can insert competitors" on public.competitors;
+drop policy if exists "Admins can update competitors" on public.competitors;
+
 alter table public.profiles drop column role;
 
 -- Profiles RLS: "admin" read-all becomes "can_manage_users" read-all
-drop policy if exists "Admins can read all profiles" on public.profiles;
-
 create policy "Users who manage users can read all profiles"
   on public.profiles for select
   using (
@@ -33,9 +37,6 @@ create policy "Users who manage users can read all profiles"
 -- Competitors RLS: split by is_genea between can_edit_us and can_edit_them.
 -- Actual enforcement lives in the Next.js route handlers (service-role client
 -- bypasses RLS there); these policies are a defense-in-depth backstop.
-drop policy if exists "Authenticated users can read active competitors" on public.competitors;
-drop policy if exists "Admins can insert competitors" on public.competitors;
-drop policy if exists "Admins can update competitors" on public.competitors;
 
 create policy "Authenticated users can read active or editable competitors"
   on public.competitors for select
