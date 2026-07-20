@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, PlusCircle, Clock, Building2, Users, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, PlusCircle, Clock, Building2, Users, LayoutTemplate, Settings, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { Permissions } from "@/lib/permissions";
@@ -28,6 +28,12 @@ export function Sidebar({ permissions, userEmail }: SidebarProps) {
     { href: "/history", label: "History", icon: Clock, show: permissions?.can_view_history },
     { href: "/us", label: "Us", icon: Building2, show: permissions?.can_edit_us },
     { href: "/them", label: "Them", icon: Users, show: permissions?.can_edit_them },
+    {
+      href: "/templates",
+      label: "Templates",
+      icon: LayoutTemplate,
+      show: permissions?.can_manage_templates,
+    },
     { href: "/admin", label: "Admin", icon: Settings, show: permissions?.can_manage_users },
   ];
 

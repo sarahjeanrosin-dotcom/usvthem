@@ -190,11 +190,45 @@ export type Database = {
           },
         ]
       }
+      battle_card_templates: {
+        Row: {
+          content: Json
+          created_at: string
+          decision_maker: string
+          id: string
+          product_category: string
+          title: string
+          updated_at: string
+          vertical: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          decision_maker: string
+          id?: string
+          product_category: string
+          title: string
+          updated_at?: string
+          vertical: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          decision_maker?: string
+          id?: string
+          product_category?: string
+          title?: string
+          updated_at?: string
+          vertical?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           can_create_battlecards: boolean
           can_edit_them: boolean
           can_edit_us: boolean
+          can_manage_templates: boolean
           can_manage_users: boolean
           can_view_history: boolean
           created_at: string
@@ -204,6 +238,7 @@ export type Database = {
           can_create_battlecards?: boolean
           can_edit_them?: boolean
           can_edit_us?: boolean
+          can_manage_templates?: boolean
           can_manage_users?: boolean
           can_view_history?: boolean
           created_at?: string
@@ -213,6 +248,7 @@ export type Database = {
           can_create_battlecards?: boolean
           can_edit_them?: boolean
           can_edit_us?: boolean
+          can_manage_templates?: boolean
           can_manage_users?: boolean
           can_view_history?: boolean
           created_at?: string

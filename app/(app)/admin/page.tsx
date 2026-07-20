@@ -14,7 +14,7 @@ export default async function AdminUsersPage() {
     admin
       .from("profiles")
       .select(
-        "id, created_at, can_view_history, can_create_battlecards, can_edit_us, can_edit_them, can_manage_users"
+        "id, created_at, can_view_history, can_create_battlecards, can_edit_us, can_edit_them, can_manage_users, can_manage_templates"
       )
       .order("created_at"),
     admin.auth.admin.listUsers(),
@@ -64,6 +64,7 @@ export default async function AdminUsersPage() {
                       can_edit_us: p.can_edit_us,
                       can_edit_them: p.can_edit_them,
                       can_manage_users: p.can_manage_users,
+                      can_manage_templates: p.can_manage_templates,
                     }}
                     isSelf={p.id === currentUser?.id}
                   />

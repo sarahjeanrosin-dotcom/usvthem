@@ -161,7 +161,7 @@ Markdown list of 3–5 factual weaknesses or limitations per competitor, support
 Markdown comparison table. Focus on features that matter most to this persona and product category. Include one column for Genea and one column for each competitor listed below — do not omit or merge any competitor's column.
 ${tableHeader}
 ${tableSeparator}|
-Include 8–12 rows covering the most decision-relevant features. Use ✓/✗ or brief descriptions.
+Include 8–12 rows covering the most decision-relevant features. Use "Yes"/"No" or brief descriptions — do not use ✓/✗ or other symbol characters, they do not render in the PDF export font.
 [END_SECTION]
 
 [SECTION:objection_handling]
@@ -207,6 +207,13 @@ Only list sources that actually contributed to specific claims above.
 [END_SECTION]`;
 }
 
+/** Re-serializes a template's sections back into the [SECTION:key]...[END_SECTION] output format. */
+export function formatTemplateExample(content: Record<string, string>): string {
+  return SECTION_KEYS.filter((key) => content[key]?.trim())
+    .map((key) => `[SECTION:${key}]\n${content[key]}\n[END_SECTION]`)
+    .join("\n\n");
+}
+
 export function buildUserMessage(params: {
   decisionMaker: string;
   vertical: string;
@@ -215,6 +222,7 @@ export function buildUserMessage(params: {
   geneaContext: string;
   competitorContext: Record<string, string>;
   serperContext: string;
+  templateExample?: string;
 }): string {
   const {
     decisionMaker,
@@ -224,6 +232,7 @@ export function buildUserMessage(params: {
     geneaContext,
     competitorContext,
     serperContext,
+    templateExample,
   } = params;
 
   const competitorLabel =
@@ -262,6 +271,16 @@ ${context || `No ${name} knowledge available. Use your general knowledge of ${na
     message += `## Recent Web Intelligence (Serper)
 
 ${serperContext}
+
+---
+
+`;
+  }
+
+  if (templateExample) {
+    message += `## Reference Example — match this style, structure, and depth. Do NOT copy its content; it is for a different scenario.
+
+${templateExample}
 
 ---
 

@@ -2,7 +2,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { searchKnowledge } from "@/lib/retrieval/search";
 import { searchSerper } from "@/lib/serper/search";
-import { buildSystemPrompt, buildUserMessage, SECTION_KEYS, type SectionKey } from "./prompts";
+import { findBestTemplate } from "./templates";
+import { buildSystemPrompt, buildUserMessage, formatTemplateExample, SECTION_KEYS, type SectionKey } from "./prompts";
 
 export interface GenerateParams {
   userId: string;
@@ -127,6 +128,15 @@ export async function* generateBattleCard(
     }
   }
 
+  // Best-match few-shot template
+  let templateExample = "";
+  try {
+    const match = await findBestTemplate(decisionMaker, vertical, productCategory);
+    if (match) templateExample = formatTemplateExample(match.content);
+  } catch {
+    // Non-fatal — proceed without a reference example
+  }
+
   // Build prompt and call Claude
   yield { type: "status", message: "Generating battle card…" };
 
@@ -146,6 +156,7 @@ export async function* generateBattleCard(
           geneaContext,
           competitorContext,
           serperContext,
+          templateExample,
         }),
       },
     ],

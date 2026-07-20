@@ -14,6 +14,7 @@ const LABELS: { key: keyof Permissions; label: string }[] = [
   { key: "can_create_battlecards", label: "Create Battle Cards" },
   { key: "can_edit_us", label: "Edit Us" },
   { key: "can_edit_them", label: "Edit Them" },
+  { key: "can_manage_templates", label: "Manage Templates" },
   { key: "can_manage_users", label: "Manage Users" },
 ];
 

@@ -7,6 +7,7 @@ export type Permissions = {
   can_edit_us: boolean;
   can_edit_them: boolean;
   can_manage_users: boolean;
+  can_manage_templates: boolean;
 };
 
 const EMPTY_PERMISSIONS: Permissions = {
@@ -15,6 +16,7 @@ const EMPTY_PERMISSIONS: Permissions = {
   can_edit_us: false,
   can_edit_them: false,
   can_manage_users: false,
+  can_manage_templates: false,
 };
 
 export async function getPermissions(userId: string): Promise<Permissions | null> {
@@ -22,7 +24,7 @@ export async function getPermissions(userId: string): Promise<Permissions | null
   const { data } = await admin
     .from("profiles")
     .select(
-      "can_view_history, can_create_battlecards, can_edit_us, can_edit_them, can_manage_users"
+      "can_view_history, can_create_battlecards, can_edit_us, can_edit_them, can_manage_users, can_manage_templates"
     )
     .eq("id", userId)
     .single();

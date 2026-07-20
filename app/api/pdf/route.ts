@@ -52,8 +52,9 @@ export async function POST(request: Request) {
     .in("id", card.competitor_ids);
 
   // Fetch Genea logo as base64 from the deployed app's public folder
+  // PNG, not SVG — @react-pdf/renderer's Image component does not reliably render inline SVG
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://usvthem.netlify.app";
-  const geneaLogo = await fetchBase64(`${appUrl}/genea-logo.svg`);
+  const geneaLogo = await fetchBase64(`${appUrl}/genea-logo.png`);
 
   const competitorData = await Promise.all(
     (competitors ?? []).map(async (c) => ({

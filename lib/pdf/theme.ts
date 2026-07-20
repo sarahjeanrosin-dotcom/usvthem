@@ -9,6 +9,7 @@ export const theme = {
     gray50: "#F9FAFB",
     gray100: "#F3F4F6",
     gray200: "#E5E7EB",
+    cream: "#F3F1EA",
   },
   fontSize: {
     cardTitle: 20,
